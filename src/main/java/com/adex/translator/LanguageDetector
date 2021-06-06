@@ -1,0 +1,51 @@
+package com.adex.translator;
+
+import com.github.pemistahl.lingua.api.Language;
+import com.github.pemistahl.lingua.api.LanguageDetectorBuilder;
+import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
+import net.dv8tion.jda.api.hooks.ListenerAdapter;
+import org.jetbrains.annotations.NotNull;
+
+public class LanguageDetector extends ListenerAdapter {
+
+    private final com.github.pemistahl.lingua.api.LanguageDetector detector;
+
+    public LanguageDetector() {
+        detector = LanguageDetectorBuilder.fromLanguages(Language.ARABIC, Language.CHINESE, Language.DANISH, Language.DUTCH,
+                Language.ENGLISH, Language.FRENCH, Language.GERMAN, Language.GREEK, Language.JAPANESE, Language.POLISH,
+                Language.PORTUGUESE, Language.RUSSIAN, Language.SPANISH, Language.TURKISH)
+                .withMinimumRelativeDistance(0.1d).build();
+
+    }
+
+    @Override
+    public void onGuildMessageReceived(@NotNull GuildMessageReceivedEvent event) {
+        if (event.getAuthor().isBot()) {
+            return;
+        }
+
+        String content = event.getMessage().getContentRaw();
+        if (isEnglish(content)) {
+            return;
+        }
+
+        Language language = detector.detectLanguageOf(content);
+        event.getChannel().sendMessage(event.getAuthor().getAsMention() + ", Please speak English, not " +
+                language.toString().toLowerCase() + "!").queue();
+        event.getMessage().delete().queue();
+    }
+
+    public boolean isEnglish(String text) {
+        Language language = detector.detectLanguageOf(text);
+        return language == Language.ENGLISH || language == Language.UNKNOWN;
+    }
+
+    /*public MessageEmbed getReplyMessage(User author, String content) {
+        return new EmbedBuilder()
+                .setTitle("TRANSLATION")
+                .setColor(Color.BLUE)
+                .addField(author.getAsTag() + " said in " + detector.detectLanguageOf(content).toString().toLowerCase() + ":", content, false)
+                .build();
+    }*/
+
+}
