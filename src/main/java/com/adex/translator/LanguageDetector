@@ -30,8 +30,12 @@ public class LanguageDetector extends ListenerAdapter {
         }
 
         Language language = detector.detectLanguageOf(content);
-        event.getChannel().sendMessage(event.getAuthor().getAsMention() + ", Please speak English, not " +
-                language.toString().toLowerCase() + "!").queue();
+
+        String lang = language.toString().toLowerCase();
+        lang = Objects.toString(lang.charAt(0)).toUpperCase() + lang.substring(1);
+
+
+        event.getChannel().sendMessage(event.getAuthor().getAsMention() + ", Please speak English, not " + lang + "!").queue();
         event.getMessage().delete().queue();
     }
 
